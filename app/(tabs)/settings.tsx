@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/context/ThemeContext';
@@ -20,24 +21,38 @@ import {
   Info,
   ChevronRight,
 } from 'lucide-react-native';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 export default function SettingsScreen() {
   const { colors, theme, setTheme, isDark } = useTheme();
   const { user, logout } = useAuth();
   const router = useRouter();
 
+  const [logoutConfirmVisible, setLogoutConfirmVisible] = React.useState(false);
+  const [alertVisible, setAlertVisible] = React.useState(false);
+  const [alertTitle, setAlertTitle] = React.useState('');
+  const [alertMessage, setAlertMessage] = React.useState('');
+
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => {
-          await logout();
-          router.replace('/(auth)/login');
-        },
-      },
-    ]);
+    if (Platform.OS === 'web') {
+      logout().catch(err => {
+        console.error('Logout error:', err);
+      });
+      return;
+    }
+    setLogoutConfirmVisible(true);
+  };
+
+  const onConfirmLogout = async () => {
+    setLogoutConfirmVisible(false);
+    try {
+      await logout();
+      router.replace('/(auth)/login');
+    } catch (error: any) {
+      setAlertTitle('Error');
+      setAlertMessage(error.message || 'Failed to logout');
+      setAlertVisible(true);
+    }
   };
 
   const themeOptions = [
@@ -129,12 +144,11 @@ export default function SettingsScreen() {
         <View style={[styles.section, { backgroundColor: colors.surface }]}>
           <TouchableOpacity
             style={styles.settingRow}
-            onPress={() =>
-              Alert.alert(
-                'About Todo App',
-                'A beautiful and feature-rich todo application built with React Native and Expo.\n\nVersion: 1.0.0'
-              )
-            }
+            onPress={() => {
+              setAlertTitle('About Todo App');
+              setAlertMessage('A beautiful and feature-rich todo application built with React Native and Expo.\n\nVersion: 1.0.0');
+              setAlertVisible(true);
+            }}
           >
             <View style={styles.settingLeft}>
               <Info size={20} color={colors.textSecondary} />
@@ -173,6 +187,27 @@ export default function SettingsScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      <ConfirmDialog
+        visible={logoutConfirmVisible}
+        title="Logout"
+        message="Are you sure you want to log out?"
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        isDestructive
+        onConfirm={onConfirmLogout}
+        onCancel={() => setLogoutConfirmVisible(false)}
+      />
+
+      <ConfirmDialog
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        confirmLabel="OK"
+        showCancel={false}
+        onConfirm={() => setAlertVisible(false)}
+        onCancel={() => setAlertVisible(false)}
+      />
     </View>
   );
 }

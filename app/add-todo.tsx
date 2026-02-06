@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/context/ThemeContext';
 import { useTodos } from '@/context/TodoContext';
@@ -18,6 +19,7 @@ import { Priority, CategoryId, RecurringPattern } from '@/types/todo';
 import { CATEGORIES } from '@/constants/categories';
 import { spacing, borderRadius, fontSize } from '@/theme/spacing';
 import { X, Calendar, Tag as TagIcon } from 'lucide-react-native';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 export default function AddTodoScreen() {
   const { colors } = useTheme();
@@ -45,6 +47,11 @@ export default function AddTodoScreen() {
 
   const [titleError, setTitleError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [pickerDate, setPickerDate] = useState(new Date());
 
   const priorityOptions: Priority[] = ['low', 'medium', 'high'];
   const recurringOptions: RecurringPattern[] = ['daily', 'weekly', 'monthly'];
@@ -61,9 +68,28 @@ export default function AddTodoScreen() {
   };
 
   const handleSetDueDate = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    setDueDate(tomorrow.toISOString());
+    setPickerDate(dueDate ? new Date(dueDate) : new Date());
+    setShowDatePicker(true);
+  };
+
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setPickerDate(selectedDate);
+      if (event.type === 'set') {
+        setShowTimePicker(true);
+      }
+    }
+  };
+
+  const onTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      const newDate = new Date(pickerDate);
+      newDate.setHours(selectedTime.getHours());
+      newDate.setMinutes(selectedTime.getMinutes());
+      setDueDate(newDate.toISOString());
+    }
   };
 
   const handleSave = async () => {
@@ -99,7 +125,8 @@ export default function AddTodoScreen() {
 
       router.back();
     } catch (err) {
-      Alert.alert('Error', 'Failed to save todo');
+      setErrorMessage('Failed to save todo');
+      setErrorVisible(true);
     } finally {
       setIsLoading(false);
     }
@@ -242,10 +269,12 @@ export default function AddTodoScreen() {
               >
                 <Calendar size={16} color={colors.primary} />
                 <Text style={[styles.dateText, { color: colors.text }]}>
-                  {new Date(dueDate).toLocaleDateString('en-US', {
+                  {new Date(dueDate).toLocaleString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
                   })}
                 </Text>
               </View>
@@ -259,6 +288,25 @@ export default function AddTodoScreen() {
               onPress={handleSetDueDate}
               variant="outline"
               size="sm"
+            />
+          )}
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={pickerDate}
+              mode="date"
+              display="default"
+              onChange={onDateChange}
+            />
+          )}
+
+          {showTimePicker && (
+            <DateTimePicker
+              value={pickerDate}
+              mode="time"
+              is24Hour={true}
+              display="default"
+              onChange={onTimeChange}
             />
           )}
         </View>
@@ -368,6 +416,16 @@ export default function AddTodoScreen() {
           style={{ flex: 1 }}
         />
       </View>
+
+      <ConfirmDialog
+        visible={errorVisible}
+        title="Error"
+        message={errorMessage}
+        confirmLabel="OK"
+        showCancel={false}
+        onConfirm={() => setErrorVisible(false)}
+        onCancel={() => setErrorVisible(false)}
+      />
     </View>
   );
 }

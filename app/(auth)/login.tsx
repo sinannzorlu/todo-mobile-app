@@ -53,9 +53,9 @@ export default function LoginScreen() {
     try {
       setIsLoading(true);
       await login(email, password);
-      router.replace('/(tabs)');
-    } catch (err) {
-      setError('Invalid email or password');
+      // Don't manually navigate - let _layout handle it via auth state change
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
@@ -66,9 +66,9 @@ export default function LoginScreen() {
       setIsLoading(true);
       setError('');
       await loginWithGoogle();
-      router.replace('/(tabs)');
-    } catch (err) {
-      setError('Google login failed');
+      // Don't manually navigate - let _layout handle it via auth state change
+    } catch (err: any) {
+      setError(err.message || 'Google login failed');
     } finally {
       setIsLoading(false);
     }

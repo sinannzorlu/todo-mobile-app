@@ -17,6 +17,7 @@ import { FilterBar } from '@/components/FilterBar';
 import { filterAndSortTodos, getTodoStats } from '@/utils/todoFilters';
 import { spacing, fontSize } from '@/theme/spacing';
 import { Plus, Search, AlertCircle } from 'lucide-react-native';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 export default function TodoListScreen() {
   const { colors } = useTheme();
@@ -34,6 +35,9 @@ export default function TodoListScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
 
   const filteredTodos = filterAndSortTodos(todos, filters);
   const stats = getTodoStats(todos);
@@ -58,33 +62,38 @@ export default function TodoListScreen() {
       const todo = todos.find(t => t.id === id);
       if (todo && !todo.completed && stats.completedToday >= 4) {
         setTimeout(() => {
-          Alert.alert(
-            'Great Job!',
-            `You've completed ${stats.completedToday + 1} tasks today! Keep it up!`,
-            [{ text: 'Thanks!' }]
-          );
+          setAlertTitle('Great Job!');
+          setAlertMessage(`You've completed ${stats.completedToday + 1} tasks today! Keep it up!`);
+          setAlertVisible(true);
         }, 300);
       }
     } catch (err) {
-      Alert.alert('Error', 'Failed to update todo');
+      setAlertTitle('Error');
+      setAlertMessage('Failed to update todo');
+      setAlertVisible(true);
     }
   };
 
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [todoToDelete, setTodoToDelete] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
-    Alert.alert('Delete Todo', 'Are you sure you want to delete this todo?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteTodo(id);
-          } catch (err) {
-            Alert.alert('Error', 'Failed to delete todo');
-          }
-        },
-      },
-    ]);
+    setTodoToDelete(id);
+    setDeleteConfirmVisible(true);
+  };
+
+  const onConfirmDelete = async () => {
+    if (todoToDelete) {
+      try {
+        await deleteTodo(todoToDelete);
+      } catch (err) {
+        setAlertTitle('Error');
+        setAlertMessage('Failed to delete todo');
+        setAlertVisible(true);
+      }
+    }
+    setDeleteConfirmVisible(false);
+    setTodoToDelete(null);
   };
 
   const handleEdit = (id: string) => {
@@ -165,6 +174,27 @@ export default function TodoListScreen() {
       >
         <Plus size={28} color="#ffffff" />
       </TouchableOpacity>
+
+      <ConfirmDialog
+        visible={deleteConfirmVisible}
+        title="Delete Todo"
+        message="Are you sure you want to delete this todo?"
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isDestructive
+        onConfirm={onConfirmDelete}
+        onCancel={() => setDeleteConfirmVisible(false)}
+      />
+
+      <ConfirmDialog
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        confirmLabel="OK"
+        showCancel={false}
+        onConfirm={() => setAlertVisible(false)}
+        onCancel={() => setAlertVisible(false)}
+      />
     </View>
   );
 }

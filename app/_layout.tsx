@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Slot, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -15,20 +15,35 @@ function RootLayoutNav() {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const inTabsGroup = segments[0] === '(tabs)';
 
-    if (!isAuthenticated && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (isAuthenticated && inAuthGroup) {
-      router.replace('/(tabs)');
+    const currentPath = segments.join('/');
+
+    // Handle initial load and redirects
+    if (!isAuthenticated) {
+      // User not authenticated - should be in auth group
+      if (!inAuthGroup) {
+        console.log('[Routing] Redirecting to login - user not authenticated');
+        router.replace('/(auth)/login');
+      }
+    } else {
+      // User authenticated - redirect to tabs if in auth group or at root index
+      if (inAuthGroup || currentPath === '') {
+        router.replace('/(tabs)');
+      }
     }
   }, [isAuthenticated, segments, isLoading]);
 
+  // Show nothing while loading to prevent flash
+  if (isLoading) {
+    return null;
+  }
+
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="+not-found" />
-    </Stack>
+    <>
+      <Slot />
+      <StatusBar style="auto" />
+    </>
   );
 }
 
@@ -40,7 +55,6 @@ export default function RootLayout() {
       <AuthProvider>
         <TodoProvider>
           <RootLayoutNav />
-          <StatusBar style="auto" />
         </TodoProvider>
       </AuthProvider>
     </ThemeProvider>

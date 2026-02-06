@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Todo, TodoFilters, FilterType, SortType } from '@/types/todo';
 import { todoService } from '@/services/todoService';
+import { useAuth } from './AuthContext';
 
 interface TodoContextType {
   todos: Todo[];
@@ -21,6 +22,7 @@ interface TodoContextType {
 const TodoContext = createContext<TodoContextType | undefined>(undefined);
 
 export function TodoProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [filters, setFilters] = useState<TodoFilters>({
     filter: 'all',
@@ -31,8 +33,13 @@ export function TodoProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadTodos();
-  }, []);
+    if (user) {
+      loadTodos();
+    } else {
+      setTodos([]);
+      setIsLoading(false);
+    }
+  }, [user?.id]);
 
   const loadTodos = async () => {
     try {
