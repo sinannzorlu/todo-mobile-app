@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
@@ -24,6 +24,16 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a6ac1daf-fc31-4492-93dc-07177428b33f"
+      }
+    },
+    "android": {
+      "package": "com.sinan25.boltexponativewind",
+      "googleServicesFile": "./google-services.json"
     }
   }
 }

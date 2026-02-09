@@ -5,6 +5,7 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { TodoProvider } from '@/context/TodoContext';
+import { syncPushToken } from '@/services/notifications';
 
 function RootLayoutNav() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -31,6 +32,9 @@ function RootLayoutNav() {
       if (inAuthGroup || currentPath === '') {
         router.replace('/(tabs)');
       }
+
+      // Sync push token when authenticated
+      syncPushToken();
     }
   }, [isAuthenticated, segments, isLoading]);
 
