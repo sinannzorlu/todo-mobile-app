@@ -31,5 +31,13 @@ yarn-error.*
 .env*.local
 .env
 
+# firebase
+google-services.json
+android/app/google-services.json
+*-firebase-adminsdk-*.json
+
+# native
+android/app/debug.keystore
+
 # typescript
 *.tsbuildinfo
