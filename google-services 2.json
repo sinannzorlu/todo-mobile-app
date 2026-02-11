@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "314705054575",
+    "project_id": "todo-project-b982f",
+    "storage_bucket": "todo-project-b982f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:314705054575:android:c57f371faa28c72453f69a",
+        "android_client_info": {
+          "package_name": "com.sinan25.boltexponativewind"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFe1lTXga14tncCh-QnP4W4sdwbmIykK4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

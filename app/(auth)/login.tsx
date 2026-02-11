@@ -155,6 +155,15 @@ export default function LoginScreen() {
               </TouchableOpacity>
             </Link>
           </View>
+
+          <View style={styles.brandContainer}>
+            <Text style={[styles.brandName, { color: colors.text }]}>
+              Updone
+            </Text>
+            <Text style={[styles.slogan, { color: colors.textSecondary }]}>
+              Stay Up. Stay Done.
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -210,6 +219,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: spacing.xxl,
   },
   footerText: {
     fontSize: fontSize.md,
@@ -217,5 +227,20 @@ const styles = StyleSheet.create({
   link: {
     fontSize: fontSize.md,
     fontWeight: '600',
+  },
+  brandContainer: {
+    alignItems: 'center',
+    marginTop: 'auto',
+    paddingTop: spacing.xxl,
+  },
+  brandName: {
+    fontSize: fontSize.xl,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
+  slogan: {
+    fontSize: fontSize.sm,
+    fontStyle: 'italic',
+    marginTop: spacing.xs,
   },
 });
